@@ -42,9 +42,13 @@ public class CameraController : MonoBehaviour
 {
     public Camera camera;
     public CameraConfiguration configuration;
-    void Start()
+    public static CameraController instance;
+    void Awake()
     {
-        
+        if (!instance)
+        {
+            instance = this;
+        }
     }
 
     // Update is called once per frame
