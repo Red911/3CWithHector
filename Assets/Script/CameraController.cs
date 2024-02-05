@@ -41,8 +41,10 @@ public class CameraConfiguration
 public class CameraController : MonoBehaviour
 {
     public Camera camera;
-    public CameraConfiguration configuration;
+    CameraConfiguration configuration;
     public static CameraController instance;
+
+    private List<AView> activeViews = new List<AView>();
     void Awake()
     {
         if (!instance)
@@ -57,6 +59,7 @@ public class CameraController : MonoBehaviour
         ApplyConfiguration(camera, configuration);
     }
 
+    //CamConfig
     public void ApplyConfiguration(Camera cam, CameraConfiguration config)
     {
         cam.transform.position = config.GetPosition();
@@ -68,4 +71,18 @@ public class CameraController : MonoBehaviour
     {
         configuration.DrawGizmos(Color.red);
     }
+    
+    //Active Views
+
+    public void AddView(AView view)
+    {
+        activeViews.Add(view);
+    }
+    
+    public void RemoveView(AView view)
+    {
+        activeViews.Remove(view);
+    }
+
+    
 }
