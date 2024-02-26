@@ -40,9 +40,15 @@ public class CameraConfiguration
 
 public class CameraController : MonoBehaviour
 {
-    public Camera camera;
-    CameraConfiguration configuration;
     public static CameraController instance;
+    public Camera camera;
+    
+    //CamConfig
+    public CameraConfiguration actualConfig;
+    public CameraConfiguration targetConfig;
+    public bool moveTheCam;
+    public float speed;
+   
 
     private List<AView> activeViews = new List<AView>();
     void Awake()
@@ -51,26 +57,110 @@ public class CameraController : MonoBehaviour
         {
             instance = this;
         }
+        
+        foreach (var view in GetComponents<AView>())
+        {
+            AddView(view);
+        }
     }
 
-    // Update is called once per frame
+    private void Start()
+    {
+        
+    }
+
     void Update()
     {
-        ApplyConfiguration(camera, configuration);
+        if (activeViews.Count == 0)
+        {
+            print("y a rienne");
+        }
+        MoveCamToTarget(actualConfig, targetConfig);
+        ApplyConfiguration(camera, actualConfig);
     }
 
     //CamConfig
     public void ApplyConfiguration(Camera cam, CameraConfiguration config)
     {
+        if (!moveTheCam)
+        {
+            config.pitch = ComputeAveragePitch();
+            config.yaw = ComputeAverageYaw();
+            config.roll = ComputeAverageRoll();
+            config.fov = ComputeAverageFOV();
+        }
+        
+        
         cam.transform.position = config.GetPosition();
         cam.transform.rotation = config.GetRotation();
         cam.fieldOfView = config.fov;
     }
-
-    void OnDrawGizmos()
+    
+    public float ComputeAverageFOV()
     {
-        configuration.DrawGizmos(Color.red);
+        float sum = 0;
+        float sumWeight = 0;
+        for (int i = 0; i < activeViews.Count; i++)
+        {
+            CameraConfiguration config = activeViews[i].GetConfiguration();
+            sum += (config.fov * activeViews[i].weight);
+            sumWeight += activeViews[i].weight;
+        }
+        
+        return sum/sumWeight;
     }
+ 
+    public float ComputeAverageYaw()
+    {
+        Vector2 sum = Vector2.zero;
+        foreach (AView view in activeViews)
+        {
+            CameraConfiguration config = view.GetConfiguration();
+            sum += new Vector2(Mathf.Cos(config.yaw * Mathf.Deg2Rad),
+                Mathf.Sin(config.yaw * Mathf.Deg2Rad)) * view.weight;
+        }
+        return Vector2.SignedAngle(Vector2.right, sum);
+    }
+    
+    public float ComputeAveragePitch()
+    {
+        Vector2 sum = Vector2.zero;
+        foreach (AView view in activeViews)
+        {
+            CameraConfiguration config = view.GetConfiguration();
+            sum += new Vector2(Mathf.Cos(config.pitch * Mathf.Deg2Rad),
+                Mathf.Sin(config.pitch * Mathf.Deg2Rad)) * view.weight;
+        }
+        return Vector2.SignedAngle(Vector2.right, sum);
+    }
+    
+    public float ComputeAverageRoll()
+    {
+        Vector2 sum = Vector2.zero;
+        foreach (AView view in activeViews)
+        {
+            CameraConfiguration config = view.GetConfiguration();
+            sum += new Vector2(Mathf.Cos(config.roll * Mathf.Deg2Rad),
+                Mathf.Sin(config.roll * Mathf.Deg2Rad)) * view.weight;
+        }
+        return Vector2.SignedAngle(Vector2.right, sum);
+    }
+    
+    //Smoothing
+    private void MoveCamToTarget(CameraConfiguration actual, CameraConfiguration target)
+    {
+        
+        if (speed * Time.deltaTime < 1)
+        {
+            actual.pivot += (target.pivot - actual.pivot) * (speed * Time.deltaTime);
+        }
+        else
+        {
+            actual.pivot = target.pivot;
+        }
+        
+    }
+    
     
     //Active Views
 
@@ -84,5 +174,14 @@ public class CameraController : MonoBehaviour
         activeViews.Remove(view);
     }
 
-    
+    //Gizmo
+
+    private void OnDrawGizmos()
+    {
+        actualConfig.DrawGizmos(Color.green);
+        if (moveTheCam)
+        {
+            targetConfig.DrawGizmos(Color.red);
+        }
+    }
 }
