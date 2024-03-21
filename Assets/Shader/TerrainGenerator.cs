@@ -56,24 +56,23 @@ public class TerrainGenerator : MonoBehaviour
 
     void CreateTriangle()
     {
-        int Vertex = 0;
         int trian = 0;
 
-        for (int X = 0; X < _widthNoise; X++)
+        for (int X = 0; X < _widthNoise - 1; X++)
         {
-            for (int Y = 0; Y < _heigthNoise; Y++)
+            for (int Y = 0; Y < _heigthNoise - 1; Y++)
             {
-                triangles[trian + 0] = Vertex;
-                triangles[trian + 1] = (Vertex + _widthNoise + 1);
-                triangles[trian + 2] = (Vertex + 1);
-                triangles[trian + 3] = (Vertex + 1);
-                triangles[trian + 4] = (Vertex + _widthNoise + 1);
-                triangles[trian + 5] = (Vertex + _widthNoise + 2);
+                triangles[trian + 0] = Index2Dto1D(X, Y, _widthNoise);
+                triangles[trian + 1] = Index2Dto1D(X, Y + 1, _widthNoise);
+                triangles[trian + 2] = Index2Dto1D(X + 1, Y, _widthNoise);
+                
+                triangles[trian + 3] = Index2Dto1D(X + 1, Y, _widthNoise);
+                triangles[trian + 4] = Index2Dto1D(X, Y + 1, _widthNoise);
+                
+                triangles[trian + 5] = Index2Dto1D(X + 1, Y + 1, _widthNoise);
 
-                Vertex++;
                 trian += 6;
             }
-            Vertex++;
         }
     }
     
