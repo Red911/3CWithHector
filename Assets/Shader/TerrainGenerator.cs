@@ -17,6 +17,8 @@ public class TerrainGenerator : MonoBehaviour
     private Vector3[] vertices;
     private int[] triangles;
     [SerializeField] private float heigthMax = 10f;
+    
+    
 
     private void Awake()
     {
@@ -25,6 +27,7 @@ public class TerrainGenerator : MonoBehaviour
         _heigthNoise = perlinNoise.height;
 
         vertices = new Vector3[_widthNoise * _heigthNoise];
+        triangles = new int[((_widthNoise - 1) * (_heigthNoise - 1 )) * 6];
 
         for (int i = 0; i < perlinNoise.width; i++)
         {
@@ -35,7 +38,8 @@ public class TerrainGenerator : MonoBehaviour
                 vertices[Index2Dto1D(i,j,_widthNoise)] = CoordToWorldPostion(i, height * heigthMax, j);
             }
         }
-        
+
+        CreateTriangle();
     }
 
     private void Start()
@@ -52,7 +56,25 @@ public class TerrainGenerator : MonoBehaviour
 
     void CreateTriangle()
     {
-        
+        int Vertex = 0;
+        int trian = 0;
+
+        for (int X = 0; X < _widthNoise; X++)
+        {
+            for (int Y = 0; Y < _heigthNoise; Y++)
+            {
+                triangles[trian + 0] = Vertex;
+                triangles[trian + 1] = (Vertex + _widthNoise + 1);
+                triangles[trian + 2] = (Vertex + 1);
+                triangles[trian + 3] = (Vertex + 1);
+                triangles[trian + 4] = (Vertex + _widthNoise + 1);
+                triangles[trian + 5] = (Vertex + _widthNoise + 2);
+
+                Vertex++;
+                trian += 6;
+            }
+            Vertex++;
+        }
     }
     
     int Index2Dto1D(int i, int j, int width) { return i + j * width; }
