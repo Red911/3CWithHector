@@ -15,8 +15,12 @@ public class TerrainGenerator : MonoBehaviour
     private Color[] _perlinPixels;
     [SerializeField] private float sizeTile;
     private Vector3[] vertices;
-    private int[] triangles;
+    
+    private Vector2[] texCoord;
     [SerializeField] private float heigthMax = 10f;
+    
+    //Array Triangle
+    private int[] triangles;
     
     
 
@@ -27,7 +31,12 @@ public class TerrainGenerator : MonoBehaviour
         _heigthNoise = perlinNoise.height;
 
         vertices = new Vector3[_widthNoise * _heigthNoise];
+        
+        //Triangle initialise
         triangles = new int[((_widthNoise - 1) * (_heigthNoise - 1 )) * 6];
+        
+        
+        texCoord = new Vector2[vertices.Length];
 
         for (int i = 0; i < perlinNoise.width; i++)
         {
@@ -36,10 +45,14 @@ public class TerrainGenerator : MonoBehaviour
                 float height = _perlinPixels[Index2Dto1D(i,j,_widthNoise)].r;
                 
                 vertices[Index2Dto1D(i,j,_widthNoise)] = CoordToWorldPostion(i, height * heigthMax, j);
+                texCoord[Index2Dto1D(i, j, _widthNoise)] = PixelToUV(i, j);
             }
         }
-
+        
+        //Triangle fonction
         CreateTriangle();
+        
+        
     }
 
     private void Start()
@@ -48,6 +61,7 @@ public class TerrainGenerator : MonoBehaviour
         mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
         mesh.vertices = vertices;
         mesh.triangles = triangles;
+        mesh.uv = texCoord; 
         
         mesh.RecalculateBounds();
         mesh.RecalculateNormals();
@@ -81,6 +95,25 @@ public class TerrainGenerator : MonoBehaviour
     Vector3 CoordToWorldPostion(int x, int y, int z) { return new Vector3(x,y,z);}
     
     Vector3 CoordToWorldPostion(float x, float y, float z) { return new Vector3(x,y,z);}
+
+    Vector2 PixelToUV(int i, int j)
+    {
+        if (i == 0 && j == 0)
+        {
+            return new Vector2(0, 0);
+        }
+        else if (i == 0 && j != 0)
+        {
+            return new Vector2(0, 1 / j);
+        }
+        else if (i != 0 && j == 0)
+        {
+            return new Vector2(1/i, 0);
+        }
+        
+        return new Vector2(1 / i, 1 / j);
+
+    }
 
    
 }
